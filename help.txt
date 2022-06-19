@@ -1,0 +1,4 @@
+Using key AD to go left and right.
+Using key J to pick up the bottle book.
+Drink the bottle and become boss baby.
+When you are boss baby, you can read Tim letter.

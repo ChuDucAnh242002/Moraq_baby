@@ -60,7 +60,8 @@ class Player:
         self.rect.width = self.img.get_width()
         self.rect.height = self.img.get_height()
         dis.blit(self.img, (self.rect.x, self.rect.y))
-        pygame.draw.rect(dis, BLACK, self.rect, 1)
+        # pygame.draw.rect(dis, BLACK, self.rect, 1)
+        # print(self.rect.x, self.rect.y)
 
     def handle_key_pressed(self):
         dx = 0

@@ -75,10 +75,10 @@ put_down_fx = pygame.mixer.Sound('assets/sfx/put_down.wav')
 bottle_fx = pygame.mixer.Sound('assets/sfx/bottle.wav')
 love_book_fx = pygame.mixer.Sound('assets/sfx/love_book.wav')
 
-pick_up_fx.set_volume(0.2)
-put_down_fx.set_volume(0.2)
-bottle_fx.set_volume(0.2)
-love_book_fx.set_volume(0.2)
+pick_up_fx.set_volume(0.1)
+put_down_fx.set_volume(0.1)
+bottle_fx.set_volume(0.1)
+love_book_fx.set_volume(0.1)
 
 class World:
     def __init__(self, player):
@@ -89,6 +89,7 @@ class World:
         self.books = self.init_books()
         self.items = self.init_items()
         self.texts = self.init_texts()
+        self.fade = -1
 
     def init_tiles(self):
         tile_rects = []
@@ -350,18 +351,12 @@ class World:
                     self.books.remove(book)
             if book.num == 1 and book.collide(rect) and self.player.move:
                 love_book_fx.play()
-                self.reset(self.level + 1)
+                self.fade = 2
+                # self.reset(self.level + 1)
             if book.num == 2 and book.collide(rect):
                 if self.player.put_down():
                     put_down_fx.play()
                     book.show = True
-
-    def collide_rect(self):
-        rect = self.player.rect
-        if len(self.placed_rects) > 0:
-            for rect in self.placed_rects:
-                if self.player.rect.colliderect(rect) and self.player.put_down():
-                    pass
 
     def reset(self, level):
         self.player.reset(180, 184)
@@ -371,6 +366,7 @@ class World:
         self.books = self.init_books()
         self.items = self.init_items()
         self.texts = self.init_texts()
+        self.fade = -1
 
 class Book:
     def __init__(self, x, y, num):
