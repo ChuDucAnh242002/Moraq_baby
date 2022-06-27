@@ -89,6 +89,7 @@ class World:
         self.books = self.init_books()
         self.items = self.init_items()
         self.texts = self.init_texts()
+        self.tutorial_texts = self.init_tutorial_texts()
         self.fade = -1
 
     def init_tiles(self):
@@ -160,7 +161,7 @@ class World:
     def init_items(self):
         items = []
         if self.level == 1:
-            item = Item(300, GROUND_Y, 0)
+            item = Item(250, GROUND_Y, 0)
             items.append(item)
 
         elif self.level == 2:
@@ -208,6 +209,7 @@ class World:
         text_7 = "Love, Timmy"
         text_71 = "Thanks for playing"
 
+
         if self.level == 1:
             texts.append(text_1)
         elif self.level == 2:
@@ -222,18 +224,72 @@ class World:
             texts.extend([text_7, text_71])
         return texts
 
+    def init_tutorial_texts(self):
+        texts = []
+        text_1 = ["Use AD or arrow keys to move", (125, 150), True]
+        text_2 = ["Drink bottle to turn to boss baby", (190, 150), False]
+        text_3 = ["Read memo", (80, 150), False]
+        text_4 = ["J/X to pick up book", (210, 150), True]
+        text_5 = ["J/X to place book", (130, 150), False]
+        text_6 = ["R to reset level", (130, 150), True]
+        texts.extend([text_1, text_2, text_3, text_4, text_5, text_6])
+        return texts
+
     def draw(self, dis):
         for tile in self.tile_rects:
             index = tile[0]
             dis.blit(MAP_IMAGE[index], (tile[1].x, tile[1].y))
         for book in self.books:
             book.draw(dis)
+            book.draw_rect(dis)
         for item in self.items:
             item.draw(dis)
+            item.draw_rect(dis)
         for index, text in enumerate(self.texts):
             text = TEXT_FONT.render(text, 2, PURPLE_BLACK)
             dis.blit(text, (20, 20 + 12*index))
+        self.draw_tutorial(dis)
 
+    def draw_tutorial(self, dis):
+        if self.level == 1:
+            text_0 = self.tutorial_texts[0]
+            text_1 = self.tutorial_texts[1]
+            text_2 = self.tutorial_texts[2]
+            if text_0[2]:
+                tutorial_text_0 = TEXT_FONT.render(text_0[0], 2, PURPLE_BLACK)
+                dis.blit(tutorial_text_0, text_0[1])
+            if text_1[2]:
+                tutorial_text_1 = TEXT_FONT.render(text_1[0], 2, PURPLE_BLACK)
+                dis.blit(tutorial_text_1, text_1[1])
+            if text_2[2]:
+                tutorial_text_2 = TEXT_FONT.render(text_2[0], 2, PURPLE_BLACK)
+                dis.blit(tutorial_text_2, text_2[1])
+            movement = self.player.movement
+            if movement[0] != 0:
+                text_0[2] = False
+                text_1[2] = True
+            if self.player.move:
+                text_1[2] = False
+                text_2[2] = True
+
+        if self.level == 2:
+            text_3 = self.tutorial_texts[3]
+            text_4 = self.tutorial_texts[4]
+            if text_3[2]:
+                tutorial_text_3 = TEXT_FONT.render(text_3[0], 2, PURPLE_BLACK)
+                dis.blit(tutorial_text_3, text_3[1])
+            if text_4[2]:
+                tutorial_text_4 = TEXT_FONT.render(text_4[0], 2, PURPLE_BLACK)
+                dis.blit(tutorial_text_4, text_4[1])
+            if self.player.book != None:
+                text_3[2] = False
+                text_4[2] = True
+
+        if self.level == 3:
+            text_5 = self.tutorial_texts[5]
+            if text_5[2]:
+                tutorial_text_5 = TEXT_FONT.render(text_5[0], 2, PURPLE_BLACK)
+                dis.blit(tutorial_text_5, text_5[1])
     def hit(self, rect):
         hit_list = []
         for tile in self.tile_rects:
@@ -242,104 +298,61 @@ class World:
         return hit_list
 
     def collision_test(self):
-        collision_types = {'top': False, 'bottom': False, 'right': False, 'left': False}
         rect = self.player.rect
         movement = self.player.movement
 
-        self.player.in_air = True
-        
         rect.x += movement[0]
         hit_list = self.hit(rect)
         for tile in hit_list:
-            if movement[0] > 0:
-                rect.right = tile.left
-                collision_types['right'] = True
-            elif movement[0] < 0:
-                rect.left = tile.right
-                collision_types['left'] = True
-
+            self.re_pos(tile)
         for item in self.items:
-            if item.num == 1 and item.collide(rect):
-                if self.player.crawl:
-                    if rect.y > item.rect.y:
-                        if movement[0] > 0:
-                            rect.right = item.rect.left
-                        elif movement[0] < 0:
-                            rect.left = item.rect.right
-                elif self.player.crawl_book:
-                    if rect.y + 5 > item.rect.y:
-                        if movement[0] > 0:
-                            rect.right = item.rect.left
-                        elif movement[0] < 0:
-                            rect.left = item.rect.right
-                elif self.player.move:
-                    if rect.y + 8 > item.rect.y:
-                        if movement[0] > 0:
-                                rect.right = item.rect.left
-                        elif movement[0] < 0:
-                            rect.left = item.rect.right
-
-            if item.num == 2 and item.collide(rect):
-                if self.player.crawl:
-                    if (rect.y + 5) > item.rect.y:
-                        if movement[0] > 0:
-                            rect.right = item.rect.left
-                        elif movement[0] < 0:
-                            rect.left = item.rect.right
-                elif self.player.crawl_book:
-                    if rect.y + 10 > item.rect.y:
-                        if movement[0] > 0:
-                            rect.right = item.rect.left
-                        elif movement[0] < 0:
-                            rect.left = item.rect.right
-                elif self.player.move:
-                    if rect.y + 13 > item.rect.y:
-                        if movement[0] > 0:
-                            rect.right = item.rect.left
-                        elif movement[0] < 0:
-                            rect.left = item.rect.right
-                
-                else:
-                    if movement[0] > 0:
-                            rect.right = item.rect.left
-                    elif movement[0] < 0:
-                        rect.left = item.rect.right
+            if item.num == 0 : continue
+            if item.collide(rect):
+                crawl_y = rect.y + 2
+                crawl_book_y = rect.y + 7
+                walk_y = rect.y + 10
+                if item.num == 2 :
+                    crawl_y = rect.y + 5
+                    crawl_book_y = rect.y + 10
+                    walk_y = rect.y + 13
+                if (self.player.crawl and crawl_y > item.rect.y) or (self.player.crawl_book and crawl_book_y > item.rect.y) or (self.player.move and walk_y > item.rect.y):
+                    self.re_pos(item.rect)
 
         rect.y += movement[1]
         hit_list = self.hit(rect)
         for tile in hit_list:
-            if movement[1] > 0:
-                rect.bottom = tile.top
-                collision_types['bottom'] = True
-                self.player.in_air = False
-            elif movement[1] < 0:
-                rect.top = tile.bottom
-                collision_types['top'] = True
+            self.re_pos_y(tile)
 
         for item in self.items:
             if item.num > 0 and item.collide(rect):
-                if movement[1] > 0:
-                    rect.bottom = item.rect.top
-                elif movement[1] < 0:
-                    rect.top = item.rect.bottom
-        
+                self.re_pos_y(item.rect)
+                
         for book in self.books:
             if book.num >= 2 and book.collide(rect) and book.show:
-                if movement[1] > 0:
-                    rect.bottom = book.rect.top
-                elif movement[1] < 0:
-                    rect.top = book.rect.bottom
+                self.re_pos_y(book.rect)
 
-        return collision_types
+    def re_pos(self, entity):
+        rect = self.player.rect
+        movement = self.player.movement
+        if movement[0] > 0:
+            rect.right = entity.left
+        elif movement[0] < 0:
+            rect.left = entity.right
+
+    def re_pos_y(self, entity):
+        rect = self.player.rect
+        movement = self.player.movement
+        if movement[1] > 0:
+            rect.bottom = entity.top
+        elif movement[1] < 0:
+            rect.top = entity.bottom
 
     def collide_item(self):
         rect = self.player.rect
         if len(self.items) > 0:
             if self.items[0].collide(rect):
                 bottle_fx.play()
-                self.player.move = True
-                self.player.crawl = False
-                self.player.rect.y = GROUND_Y - 16
+                self.player.change_action("crawl", "walk")
                 self.items.remove(self.items[0])
 
     def collide_book(self):
@@ -352,7 +365,6 @@ class World:
             if book.num == 1 and book.collide(rect) and self.player.move:
                 love_book_fx.play()
                 self.fade = 2
-                # self.reset(self.level + 1)
             if book.num == 2 and book.collide(rect):
                 if self.player.put_down():
                     put_down_fx.play()
@@ -407,10 +419,10 @@ class Item:
     def draw(self, dis):
         dis.blit(self.img, (self.rect.x, self.rect.y))
 
+    def draw_rect(self, dis):
+        pygame.draw.rect(dis, BLACK, self.rect, 1)
+
     def collide(self, rect):
         if self.rect.colliderect(rect):
                 return True
         return False
-
-
-

@@ -24,7 +24,6 @@ pygame.mixer.music.load('assets/music/music.wav')
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play(loops = -1)
 
-
 def quit():
     pygame.quit()
     sys.exit()
@@ -34,6 +33,7 @@ def draw(world, player):
     world.draw(DIS)
     if world.level < 6:
         player.draw(DIS)
+        player.draw_rect(DIS)
     
 def main():
 
