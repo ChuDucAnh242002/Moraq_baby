@@ -15,7 +15,6 @@ WIDTH, HEIGHT = 384 ,216
 WIN = pygame.display.set_mode(WIN_SIZE)
 DIS = pygame.Surface((WIDTH, HEIGHT))
 
-
 CLOCK = pygame.time.Clock()
 FPS = 60
 
@@ -31,9 +30,8 @@ def quit():
 def draw(world, player):
     DIS.fill(WHITE)
     world.draw(DIS)
-    if world.level < 6:
-        player.draw(DIS)
-        player.draw_rect(DIS)
+    player.draw(DIS)
+    # player.draw_rect(DIS)
     
 def main():
 
@@ -56,24 +54,23 @@ def main():
                     world.reset(world.level)
 
         draw(world, player)
-        if world.level < 6:
-            world.collision_test()
-            player.handle_key_pressed()
-            world.collide_item()
-            world.collide_book()
-            if world.fade == 2:
-                timer = 40
-                world.fade -= 1
-                while timer > 0:
-                    screenshoot = pygame.transform.scale(DIS, (WIN_SIZE[0], WIN_SIZE[1]))
-                    timer -= 1
-                    black = pygame.Surface((WIN_SIZE[0], WIN_SIZE[1]))
-                    black.set_alpha(255- 255/40 *timer)
-                    screenshoot.blit(black, (0, 0))
-                    WIN.blit(screenshoot, (0, 0))
-                    pygame.display.update()
-                    CLOCK.tick(FPS)
-                world.reset(world.level + 1)
+        world.collision_test()
+        player.handle_key_pressed()
+        world.collide_item()
+        world.collide_book()
+        if world.fade == 2:
+            timer = 40
+            world.fade -= 1
+            while timer > 0:
+                screenshoot = pygame.transform.scale(DIS, (WIN_SIZE[0], WIN_SIZE[1]))
+                timer -= 1
+                black = pygame.Surface((WIN_SIZE[0], WIN_SIZE[1]))
+                black.set_alpha(255- 255/40 *timer)
+                screenshoot.blit(black, (0, 0))
+                WIN.blit(screenshoot, (0, 0))
+                pygame.display.update()
+                CLOCK.tick(FPS)
+            world.reset(world.level + 1)
                 
         surf = pygame.transform.scale(DIS, (WIN_SIZE[0], WIN_SIZE[1]))
         WIN.blit(surf, (0, 0))

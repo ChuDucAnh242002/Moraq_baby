@@ -152,9 +152,14 @@ class World:
             book_25 = Book(236, GROUND_Y -5, 2)
             books.extend([book_1, book_0, book_01, book_02, book_03, book_04, book_05, book_2, book_21, book_22, book_23, book_24, book_25])
 
+        # elif self.level == 6:
+            
+
         elif self.level == 6:
             book_0 = Book(160, 112, 1)
             books.append(book_0)
+
+
             
         return books
 
@@ -187,6 +192,8 @@ class World:
             item_11 = Item(250, GROUND_Y, 1)
             item_2 = Item(140, GROUND_Y, 2)
             items.extend([item_0, item_1, item_11, item_2])
+
+        # elif self.level == 6:
 
         elif self.level == 6:
             pass
@@ -231,7 +238,7 @@ class World:
         text_3 = ["Read memo", (80, 150), False]
         text_4 = ["J/X to pick up book", (210, 150), True]
         text_5 = ["J/X to place book", (130, 150), False]
-        text_6 = ["R to reset level", (130, 150), True]
+        text_6 = ["R to reset level", (150, 150), True]
         texts.extend([text_1, text_2, text_3, text_4, text_5, text_6])
         return texts
 
@@ -241,10 +248,10 @@ class World:
             dis.blit(MAP_IMAGE[index], (tile[1].x, tile[1].y))
         for book in self.books:
             book.draw(dis)
-            book.draw_rect(dis)
+            # book.draw_rect(dis)
         for item in self.items:
             item.draw(dis)
-            item.draw_rect(dis)
+            # item.draw_rect(dis)
         for index, text in enumerate(self.texts):
             text = TEXT_FONT.render(text, 2, PURPLE_BLACK)
             dis.blit(text, (20, 20 + 12*index))
@@ -284,16 +291,19 @@ class World:
             if self.player.book != None:
                 text_3[2] = False
                 text_4[2] = True
+            if self.player.book == None and not text_3[2]:
+                text_4[2] = False
 
         if self.level == 3:
             text_5 = self.tutorial_texts[5]
             if text_5[2]:
                 tutorial_text_5 = TEXT_FONT.render(text_5[0], 2, PURPLE_BLACK)
                 dis.blit(tutorial_text_5, text_5[1])
+
     def hit(self, rect):
         hit_list = []
         for tile in self.tile_rects:
-            if rect.colliderect(tile[1]):
+            if rect.colliderect(tile[1]) and (tile[0] == 1 or tile[0] == 2):
                 hit_list.append(tile[1])
         return hit_list
 
