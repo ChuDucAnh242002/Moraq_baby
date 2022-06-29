@@ -66,9 +66,9 @@ class Player:
         dx = 0
         dy = 0
 
-        self.vel_y += 0.5
-        if self.vel_y > 3:
-            self.vel_y = 3
+        self.vel_y += 0.2
+        if self.vel_y > 2:
+            self.vel_y = 2
         dy += self.vel_y
 
         keys = pygame.key.get_pressed()
@@ -111,15 +111,19 @@ class Player:
         if old_action == "crawl": self.crawl = False
         elif old_action == "crawl_book": self.crawl_book = False
         elif old_action == "walk": self.move = False
+
         if new_action == "crawl": self.crawl = True
         elif new_action == "crawl_book": self.crawl_book = True
         elif new_action == "walk": self.move = True
         
-        if new_action == "walk" : 
-            self.rect.x += 3
-            self.rect.y -= 11
+        if new_action == "walk":
+            if self.flip:
+                self.rect.x += 3
+            else:
+                self.rect.x -= 3
+            self.rect.y -= 8
         if new_action == "crawl_book":
-            self.rect.y -= 6
+            self.rect.y -= 3
 
     def check_action(self):
         if self.crawl_book:

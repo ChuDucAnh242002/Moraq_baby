@@ -53,11 +53,9 @@ def main():
                 if event.key == K_r:
                     world.reset(world.level)
 
-        draw(world, player)
         world.collision_test()
         player.handle_key_pressed()
-        world.collide_item()
-        world.collide_book()
+        
         if world.fade == 2:
             timer = 40
             world.fade -= 1
@@ -71,6 +69,8 @@ def main():
                 pygame.display.update()
                 CLOCK.tick(FPS)
             world.reset(world.level + 1)
+
+        draw(world, player)
                 
         surf = pygame.transform.scale(DIS, (WIN_SIZE[0], WIN_SIZE[1]))
         WIN.blit(surf, (0, 0))

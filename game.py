@@ -1,7 +1,8 @@
-from random import random 
-import pygame, os
+import pygame
 
+from core_funcs import *
 from color import *
+from text import Font
 
 pygame.font.init()
 pygame.mixer.init()
@@ -13,26 +14,10 @@ BOOK_NAMES = ['book_0', 'book_1', 'book_2', 'book_3']
 ITEM_NAMES = ['bottle', 'shell', 'table']
 LEVEL_NAMES = ['level_1', 'level_2', 'level_3', 'level_4', 'level_5', 'level_6']
 
-
 MAP_IMAGE = {}
 BOOK_IMAGE = {}
 ITEM_IMAGE = {}
 GAME_MAP = {}
-
-def load_image(path):
-    path = path + '.png'
-    img = pygame.image.load(path)
-    return img
-
-def load_map(path):
-    f = open(path + '.txt', 'r')
-    data = f.read()
-    f.close()
-    data = data.split('\n')
-    game_map = []
-    for row in data:
-        game_map.append(list(row))
-    return game_map
 
 for index, file_name in enumerate(FILE_NAMES):
     index += 1
@@ -92,6 +77,9 @@ class World:
         self.tutorial_texts = self.init_tutorial_texts()
         self.fade = -1
 
+        # Add new font
+        self.font = Font('assets/font/small_font.png', PURPLE_BLACK)
+
     def init_tiles(self):
         tile_rects = []
         for row, data in enumerate(self.cur_map):
@@ -125,8 +113,8 @@ class World:
                 books.append(book_0)
 
         elif self.level == 4:
-            book_1 = Book(350, GROUND_Y, 1)
-            book_0 = Book(320,GROUND_Y, 0)
+            book_1 = Book(280, GROUND_Y, 1)
+            book_0 = Book(250,GROUND_Y, 0)
             book_01 = Book(90, GROUND_Y, 0)
             book_02 = Book(75, GROUND_Y, 0)
             book_03 = Book(60, GROUND_Y, 0)
@@ -137,7 +125,7 @@ class World:
             books.extend([book_1, book_0, book_01, book_02, book_03, book_2, book_21, book_22, book_23])
 
         elif self.level == 5: 
-            book_1 = Book(350, GROUND_Y, 1)
+            book_1 = Book(300, GROUND_Y, 1)
             book_0 = Book(200,GROUND_Y, 0)
             book_01 = Book(90, GROUND_Y, 0)
             book_02 = Book(75, GROUND_Y, 0)
@@ -152,15 +140,6 @@ class World:
             book_25 = Book(236, GROUND_Y -5, 2)
             books.extend([book_1, book_0, book_01, book_02, book_03, book_04, book_05, book_2, book_21, book_22, book_23, book_24, book_25])
 
-        # elif self.level == 6:
-            
-
-        elif self.level == 6:
-            book_0 = Book(160, 112, 1)
-            books.append(book_0)
-
-
-            
         return books
 
     def init_items(self):
@@ -193,52 +172,33 @@ class World:
             item_2 = Item(140, GROUND_Y, 2)
             items.extend([item_0, item_1, item_11, item_2])
 
-        # elif self.level == 6:
-
         elif self.level == 6:
-            pass
+            item_0 = Item(250, GROUND_Y, 0)
+            items.append(item_0)
 
         return items
 
     def init_texts(self):
-        texts = []
-        text_1 = "Dear Boss Baby,"
-        text_2 = "I don't usually write very much but I know that memos are very important things"
-        text_3 = "Even though never went to business school, I did learn to share in kindergarten."
-        text_31 = "And if there isn't enough love for the two of us, then I will give you all of mine."
-        text_4 = "I would like to offer you a job. It will be hard-work and there will be now pay"
-        text_41 = "But the good news is that you will never be fired"
-        text_5 = "And I promise you this. Every morning when you wake up, I will be there"
-        text_51 = "Every night at dinner. I will be there"
-        text_52 = "Every birthday party, every christmas morning I will be there"
-        text_6 = "Year after year, after year"
-        text_61 = "We will grow old together and you and I will always be brother. Always"
-        text_7 = "Love, Timmy"
-        text_71 = "Thanks for playing"
+        text_1 = "Dear Boss Baby,\n"
+        text_2 = text_1 + "I don't usually write very much but I know that memos are very important things.\n"
+        text_3 = text_2 + "Even though never went to business school, I did learn to share in kindergarten.\nAnd if there isn't enough love for the two of us, then I will give you all of mine.\n"
+        text_4 = text_3 + "I would like to offer you a job. It will be hard-work and there will be no pay.\nBut the good news is that you will never be fired.\n"
+        text_5 = text_4 + "And I promise you this.\nEvery morning when you wake up, I will be there.\nEvery night at dinner, I will be there.\nEvery birthday party, every christmas morning I will be there.\nYear after year, after year.\nWe will grow old together and you and I will always be brother.\nAlways!"
+        text_6 = "Love, Timmy\nThanks for playing"
 
+        texts = [text_1, text_2, text_3, text_4, text_5, text_6]
 
-        if self.level == 1:
-            texts.append(text_1)
-        elif self.level == 2:
-            texts.extend([text_1, text_2])
-        elif self.level == 3:
-            texts.extend([text_1, text_2, text_3, text_31])
-        elif self.level == 4:
-            texts.extend([text_1, text_2, text_3, text_31, text_4, text_41])
-        elif self.level == 5:
-            texts.extend([text_1, text_2, text_3, text_31, text_4, text_41, text_5, text_51, text_52, text_6, text_61])
-        elif self.level == 6:
-            texts.extend([text_7, text_71])
-        return texts
+        text = texts[self.level - 1]
+        return text
 
     def init_tutorial_texts(self):
         texts = []
-        text_1 = ["Use AD or arrow keys to move", (125, 150), True]
-        text_2 = ["Drink bottle to turn to boss baby", (190, 150), False]
-        text_3 = ["Read memo", (80, 150), False]
-        text_4 = ["J/X to pick up book", (210, 150), True]
-        text_5 = ["J/X to place book", (130, 150), False]
-        text_6 = ["R to reset level", (150, 150), True]
+        text_1 = ["Use AD or arrow keys to move", (130, 160), True]
+        text_2 = ["Drink bottle to turn to boss baby", (190, 160), False]
+        text_3 = ["Read memo", (90, 160), False]
+        text_4 = ["J/X to pick up book", (210, 160), True]
+        text_5 = ["J/X to place book", (130, 160), False]
+        text_6 = ["R to reset level", (160, 160), True]
         texts.extend([text_1, text_2, text_3, text_4, text_5, text_6])
         return texts
 
@@ -248,13 +208,9 @@ class World:
             dis.blit(MAP_IMAGE[index], (tile[1].x, tile[1].y))
         for book in self.books:
             book.draw(dis)
-            # book.draw_rect(dis)
         for item in self.items:
             item.draw(dis)
-            # item.draw_rect(dis)
-        for index, text in enumerate(self.texts):
-            text = TEXT_FONT.render(text, 2, PURPLE_BLACK)
-            dis.blit(text, (20, 20 + 12*index))
+        self.font.render_english(self.texts, dis, (20, 20))
         self.draw_tutorial(dis)
 
     def draw_tutorial(self, dis):
@@ -263,14 +219,12 @@ class World:
             text_1 = self.tutorial_texts[1]
             text_2 = self.tutorial_texts[2]
             if text_0[2]:
-                tutorial_text_0 = TEXT_FONT.render(text_0[0], 2, PURPLE_BLACK)
-                dis.blit(tutorial_text_0, text_0[1])
+                self.font.render_english(text_0[0], dis, text_0[1])
             if text_1[2]:
-                tutorial_text_1 = TEXT_FONT.render(text_1[0], 2, PURPLE_BLACK)
-                dis.blit(tutorial_text_1, text_1[1])
+                self.font.render_english(text_1[0], dis, text_1[1])
             if text_2[2]:
-                tutorial_text_2 = TEXT_FONT.render(text_2[0], 2, PURPLE_BLACK)
-                dis.blit(tutorial_text_2, text_2[1])
+                self.font.render_english(text_2[0], dis, text_2[1])
+            
             movement = self.player.movement
             if movement[0] != 0:
                 text_0[2] = False
@@ -283,11 +237,9 @@ class World:
             text_3 = self.tutorial_texts[3]
             text_4 = self.tutorial_texts[4]
             if text_3[2]:
-                tutorial_text_3 = TEXT_FONT.render(text_3[0], 2, PURPLE_BLACK)
-                dis.blit(tutorial_text_3, text_3[1])
+                self.font.render_english(text_3[0], dis, text_3[1])
             if text_4[2]:
-                tutorial_text_4 = TEXT_FONT.render(text_4[0], 2, PURPLE_BLACK)
-                dis.blit(tutorial_text_4, text_4[1])
+                self.font.render_english(text_4[0], dis, text_4[1])
             if self.player.book != None:
                 text_3[2] = False
                 text_4[2] = True
@@ -297,8 +249,7 @@ class World:
         if self.level == 3:
             text_5 = self.tutorial_texts[5]
             if text_5[2]:
-                tutorial_text_5 = TEXT_FONT.render(text_5[0], 2, PURPLE_BLACK)
-                dis.blit(tutorial_text_5, text_5[1])
+                self.font.render_english(text_5[0], dis, text_5[1])
 
     def hit(self, rect):
         hit_list = []
@@ -340,6 +291,9 @@ class World:
         for book in self.books:
             if book.num >= 2 and book.collide(rect) and book.show:
                 self.re_pos_y(book.rect)
+
+        self.collide_book()
+        self.collide_item()
 
     def re_pos(self, entity):
         rect = self.player.rect
@@ -390,38 +344,9 @@ class World:
         self.texts = self.init_texts()
         self.fade = -1
 
-class Book:
+class Entity:
     def __init__(self, x, y, num):
-        # 0 is book of bottle, 1 is book of love
         self.num = num
-        self.img = BOOK_IMAGE[num]
-        self.rect = self.img.get_rect()
-        self.rect.x = x
-        self.rect.y = y - self.img.get_height()
-        self.show = self.init_show()
-
-    def init_show(self):
-        if self.num >= 2:
-            return False
-        return True
-
-    def draw(self, dis):
-        if self.show:
-            dis.blit(self.img, (self.rect.x, self.rect.y))
-
-    def draw_rect(self, dis):
-        pygame.draw.rect(dis, BLACK, self.rect, 1)
-
-    def collide(self, rect):
-        if self.rect.colliderect(rect):
-            return True
-        return False
-
-class Item:
-    def __init__(self, x, y, num):
-        # 0 is bottle, 1 is shell, 2 is table
-        self.num = num
-        self.img = ITEM_IMAGE[num]
         self.rect = self.img.get_rect()
         self.rect.x = x
         self.rect.y = y - self.img.get_height()
@@ -434,5 +359,27 @@ class Item:
 
     def collide(self, rect):
         if self.rect.colliderect(rect):
-                return True
+            return True
         return False
+
+class Book(Entity):
+    def __init__(self, x, y, num):
+        # 0 is book of bottle, 1 is book of love
+        self.img = BOOK_IMAGE[num]
+        super().__init__(x, y, num)
+        self.show = self.init_show()
+
+    def init_show(self):
+        if self.num >= 2:
+            return False
+        return True
+
+    def draw(self, dis):
+        if self.show:
+            super().draw(dis)
+
+class Item(Entity):
+    def __init__(self, x, y, num):
+        # 0 is bottle, 1 is shell, 2 is table
+        self.img = ITEM_IMAGE[num]
+        super().__init__(x, y, num)
