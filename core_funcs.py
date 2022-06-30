@@ -9,6 +9,12 @@ PINK = (255, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 
+# Ink pink
+PINK_1 = (254, 108, 144)
+PINK_2 = (108, 55, 145)
+PURPLE = (135, 30, 106)
+DARK_PURPLE = (69, 36, 89)
+PURPLE_BLACK = (38, 13, 52)
 
 # read File
 def read_f(path):

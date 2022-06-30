@@ -1,39 +1,18 @@
 import pygame
 
 from color import BLACK
+from animation import Animation
 
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
 
-global animation_frames
-animation_frames = {}
-
-def load_animation(path, frame_durations):
-    global animation_frames
-    animation_name = path.split('/')[-1]
-    animation_frame_data = []
-    for n, frame in enumerate(frame_durations):
-        animation_frame_id = animation_name + '_' + str(n)
-        img_loc = path + '/' + animation_frame_id + '.png'
-        # player_animations/idle/idle_0.png
-        animation_image = pygame.image.load(img_loc)
-        animation_image.set_colorkey((255,255,255))
-        animation_frames[animation_frame_id] = animation_image.copy()
-        for _ in range(frame):
-            animation_frame_data.append(animation_frame_id)
-    return animation_frame_data
-
-animation_database = {}
-
-animation_database['crawl'] = load_animation('assets/images/crawl', [7, 7, 7, 7])
-animation_database['crawl_book'] = load_animation('assets/images/crawl_book', [7, 7, 7, 7])
-animation_database['walk'] = load_animation('assets/images/walk', [7, 7, 7])
-animation_database['idle'] = load_animation('assets/images/idle', [1, 1, 1])
-
 class Player: 
     def __init__(self, x, y):
         # base img
-        self.img = animation_frames['idle_0']
+        self.animation = Animation()
+        self.animation_frames = self.animation.animation_frames
+        self.animation_database = self.animation.animation_database
+        self.img = self.animation_frames['idle_0']
         self.rect = self.img.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -48,15 +27,16 @@ class Player:
         self.book = None
 
     def draw(self, dis):
+        if self.action == 'idle':
+            self.change_idle_img()
+
         if self.action != 'idle':
             self.frame += 1
-            if self.frame >= len(animation_database[self.action]):
+            if self.frame >= len(self.animation_database[self.action]):
                 self.frame = 0
-            img_id = animation_database[self.action][self.frame]
-            self.img = animation_frames[img_id] 
+            img_id = self.animation_database[self.action][self.frame]
+            self.img = self.animation_frames[img_id] 
         self.img = pygame.transform.flip(self.img, self.flip, False)
-        self.rect.width = self.img.get_width()
-        self.rect.height = self.img.get_height()
         dis.blit(self.img, (self.rect.x, self.rect.y))
         
     def draw_rect(self, dis):
@@ -83,11 +63,11 @@ class Player:
             dx -= 1
                 
         if dx == 0:
-            self.change_idle_img()
             self.action = 'idle'
             self.frame = 0
 
         self.movement = [dx, dy]
+        # print(self.movement)
 
     def pick_up(self, book):
         if self.book == None:
@@ -125,6 +105,10 @@ class Player:
         if new_action == "crawl_book":
             self.rect.y -= 3
 
+        self.change_idle_img()
+        self.rect.width = self.img.get_width()
+        self.rect.height = self.img.get_height()
+
     def check_action(self):
         if self.crawl_book:
             self.action = 'crawl_book'
@@ -135,14 +119,14 @@ class Player:
 
     def change_idle_img(self):
         if self.crawl:
-            self.img = animation_frames['idle_0']
+            self.img = self.animation_frames['idle_0']
         elif self.move:
-            self.img = animation_frames['idle_1']
+            self.img = self.animation_frames['idle_1']
         elif self.crawl_book:
-            self.img = animation_frames['idle_2']
+            self.img = self.animation_frames['idle_2']
 
     def reset(self, x, y):
-        self.img = animation_frames['idle_0']
+        self.img = self.animation_frames['idle_0']
         self.rect = self.img.get_rect()
         self.rect.x = x
         self.rect.y = y

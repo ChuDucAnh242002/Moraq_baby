@@ -1,0 +1,20 @@
+{
+    "animations":[
+    {
+        "action": "crawl",
+        "frame_durations": [7, 7, 7, 7]    
+    },
+    {
+        "action": "crawl_book",
+        "frame_durations": [7, 7, 7, 7]
+    },
+    {
+        "action": "walk",
+        "frame_durations": [7, 7, 7]
+    },
+    {
+        "action": "idle",
+        "frame_durations": [1, 1, 1]
+    }
+]
+}

@@ -4,6 +4,7 @@ from core_funcs import *
 from color import *
 from text import Font
 
+
 pygame.font.init()
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
