@@ -31,7 +31,7 @@ def draw(world, player):
     DIS.fill(WHITE)
     world.draw(DIS)
     player.draw(DIS)
-    player.draw_rect(DIS)
+    # player.draw_rect(DIS)
     
 def main():
 

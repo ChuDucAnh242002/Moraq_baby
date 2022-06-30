@@ -21,9 +21,9 @@ for index, file_name in enumerate(FILE_NAMES):
         img_path = 'assets/images/pillar/' + file_name
     MAP_IMAGE[index + 1] = load_image(img_path)
 
+TOTAL_LEVEL = 7
 BOOK_IMAGE = load_dict_image('assets/images/book/', BOOK_NAMES)
 ITEM_IMAGE = load_dict_image('assets/images/item/', ITEM_NAMES)
-TOTAL_LEVEL = 7
 GAME_MAP = load_dict_map_json('assets/map/', TOTAL_LEVEL)
 GAME_MAP_ENTITY = load_dict_entity('assets/map/', TOTAL_LEVEL)
 # Size
@@ -49,7 +49,7 @@ love_book_fx.set_volume(0.1)
 class World:
     def __init__(self, player):
         self.player = player
-        self.level = 6
+        self.level = 1
         self.cur_map = GAME_MAP[self.level]
         self.cur_entity = GAME_MAP_ENTITY[self.level]
         self.tile_rects = self.init_tiles()
@@ -109,12 +109,12 @@ class World:
 
     def init_tutorial_texts(self):
         texts = []
-        text_1 = ["Use AD or arrow keys to move", (130, 160), True]
-        text_2 = ["Drink bottle to turn to boss baby", (190, 160), False]
-        text_3 = ["Read memo", (90, 160), False]
-        text_4 = ["J/X to pick up book", (210, 160), True]
-        text_5 = ["J/X to place book", (130, 160), False]
-        text_6 = ["R to reset level", (160, 160), True]
+        text_1 = ["Use AD or arrow keys to move", (130, 176), True]
+        text_2 = ["Drink bottle to turn to boss baby", (190, 176), False]
+        text_3 = ["Read memo", (85, 176), False]
+        text_4 = ["J/X to pick up book", (225, 176), True]
+        text_5 = ["J/X to place book", (125, 176), False]
+        text_6 = ["R to reset level", (160, 176), True]
         texts.extend([text_1, text_2, text_3, text_4, text_5, text_6])
         return texts
 
@@ -124,10 +124,10 @@ class World:
             dis.blit(MAP_IMAGE[index], (tile[1].x, tile[1].y))
         for book in self.books:
             book.draw(dis)
-            book.draw_rect(dis)
+            # book.draw_rect(dis)
         for item in self.items:
             item.draw(dis)
-            item.draw_rect(dis)
+            # item.draw_rect(dis)
         self.font.render_english(self.texts, dis, (20, 20))
         self.draw_tutorial(dis)
 
