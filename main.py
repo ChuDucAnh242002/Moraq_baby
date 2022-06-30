@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, json
 
 from pygame.locals import *
 from color import *
@@ -31,11 +31,11 @@ def draw(world, player):
     DIS.fill(WHITE)
     world.draw(DIS)
     player.draw(DIS)
-    # player.draw_rect(DIS)
+    player.draw_rect(DIS)
     
 def main():
 
-    player = Player(180, 184)
+    player = Player(180, 200)
     world = World(player)
 
     run = True

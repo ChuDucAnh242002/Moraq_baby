@@ -8,40 +8,24 @@ pygame.font.init()
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
 
-
-FILE_NAMES = ['dirt', 'grass', 'chair_pillar', 'ladder', 'pillar_0', 'pillar_1', 'table_pillar']
-BOOK_NAMES = ['book_0', 'book_1', 'book_2', 'book_3']
+FILE_NAMES = ['grass', 'dirt', 'chair_pillar', 'ladder', 'pillar_0', 'pillar_1', 'table_pillar']
+BOOK_NAMES = ['book_0', 'book_1', 'book_2']
 ITEM_NAMES = ['bottle', 'shell', 'table']
-LEVEL_NAMES = ['level_1', 'level_2', 'level_3', 'level_4', 'level_5', 'level_6']
 
 MAP_IMAGE = {}
-BOOK_IMAGE = {}
-ITEM_IMAGE = {}
-GAME_MAP = {}
 
 for index, file_name in enumerate(FILE_NAMES):
-    index += 1
-    if index == 1 or index == 2:
+    if index == 0 or index == 1:
         img_path = 'assets/images/' + file_name
-    if index >= 3 and index <= 7:
+    if index >= 2 and index <= 6:
         img_path = 'assets/images/pillar/' + file_name
-    MAP_IMAGE[index] = load_image(img_path)
+    MAP_IMAGE[index + 1] = load_image(img_path)
 
-for index, book_name in enumerate(BOOK_NAMES):
-    img_path = 'assets/images/book/' + book_name
-    BOOK_IMAGE[index] = load_image(img_path)
-    index += 1
-
-for index, item_name in enumerate(ITEM_NAMES):
-    img_path = 'assets/images/item/' + item_name
-    ITEM_IMAGE[index] = load_image(img_path)
-    index += 1
-
-for index, level_name in enumerate(LEVEL_NAMES):
-    index += 1
-    map_path = 'assets/map/' + level_name
-    GAME_MAP[index]  = load_map(map_path)
-    
+BOOK_IMAGE = load_dict_image('assets/images/book/', BOOK_NAMES)
+ITEM_IMAGE = load_dict_image('assets/images/item/', ITEM_NAMES)
+TOTAL_LEVEL = 7
+GAME_MAP = load_dict_map_json('assets/map/', TOTAL_LEVEL)
+GAME_MAP_ENTITY = load_dict_entity('assets/map/', TOTAL_LEVEL)
 # Size
 TILE_SIZE = MAP_IMAGE[1].get_width()
 BOOK_2_WIDTH, BOOK_2_HEIGHT = 14, 5
@@ -50,9 +34,6 @@ BOOK_2_WIDTH, BOOK_2_HEIGHT = 14, 5
 GROUND_Y = 192
 TABLE_Y = GROUND_Y - 6
 SHELL_Y = GROUND_Y - 16
-
-# Font
-TEXT_FONT = pygame.font.SysFont("comicsans", 9)
 
 # sfx
 pick_up_fx = pygame.mixer.Sound('assets/sfx/pick_up.wav')
@@ -68,8 +49,9 @@ love_book_fx.set_volume(0.1)
 class World:
     def __init__(self, player):
         self.player = player
-        self.level = 1
+        self.level = 6
         self.cur_map = GAME_MAP[self.level]
+        self.cur_entity = GAME_MAP_ENTITY[self.level]
         self.tile_rects = self.init_tiles()
         self.books = self.init_books()
         self.items = self.init_items()
@@ -84,109 +66,43 @@ class World:
         tile_rects = []
         for row, data in enumerate(self.cur_map):
             for col, tile in enumerate(data):
-                if tile != '0':
+                if tile != -1:
                     rect = pygame.Rect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE)
-                    tile_rects.append((int(tile), rect))
+                    tile_rects.append((tile + 1, rect))
         return tile_rects
 
     def init_books(self):
         books = []
-        if self.level == 1:
-            book = Book(100, GROUND_Y, 1)
-            books.append(book)
-
-        elif self.level == 2:
-            book_0 = Book(250, GROUND_Y, 0)
-            book_1 = Book(70, GROUND_Y, 1)
-            book_2 = Book(165, GROUND_Y, 2)
-            books.extend([book_1, book_0, book_2])
-
-        elif self.level == 3:
-            book_1 = Book(50, GROUND_Y, 1)
-            book_0 = Book(153, GROUND_Y - 6, 0)
-            book_21 = Book(350 - BOOK_2_WIDTH,  GROUND_Y, 2)
-            book_22 = Book(350 - BOOK_2_WIDTH, GROUND_Y - BOOK_2_HEIGHT, 2)
-            book_24 = Book(165, GROUND_Y, 2)
-            books.extend([book_1, book_0, book_21, book_22, book_24])
-            for i in range(2):
-                book_0 = Book(250 + i*15, GROUND_Y, 0)
-                books.append(book_0)
-
-        elif self.level == 4:
-            book_1 = Book(280, GROUND_Y, 1)
-            book_0 = Book(250,GROUND_Y, 0)
-            book_01 = Book(90, GROUND_Y, 0)
-            book_02 = Book(75, GROUND_Y, 0)
-            book_03 = Book(60, GROUND_Y, 0)
-            book_2 = Book(155, GROUND_Y, 2)
-            book_21 = Book(34, GROUND_Y, 2)
-            book_22 = Book(34, GROUND_Y - 5, 2)
-            book_23 = Book(126, GROUND_Y, 2)
-            books.extend([book_1, book_0, book_01, book_02, book_03, book_2, book_21, book_22, book_23])
-
-        elif self.level == 5: 
-            book_1 = Book(300, GROUND_Y, 1)
-            book_0 = Book(200,GROUND_Y, 0)
-            book_01 = Book(90, GROUND_Y, 0)
-            book_02 = Book(75, GROUND_Y, 0)
-            book_03 = Book(60, GROUND_Y, 0)
-            book_04 = Book(252, SHELL_Y, 0)
-            book_05 = Book(105, GROUND_Y, 0)
-            book_2 = Book(155, GROUND_Y, 2)
-            book_21 = Book(34, GROUND_Y, 2)
-            book_22 = Book(34, GROUND_Y - 5, 2)
-            book_23 = Book(126, GROUND_Y, 2)
-            book_24 = Book(236, GROUND_Y, 2)
-            book_25 = Book(236, GROUND_Y -5, 2)
-            books.extend([book_1, book_0, book_01, book_02, book_03, book_04, book_05, book_2, book_21, book_22, book_23, book_24, book_25])
-
+        for entity in self.cur_entity:
+            name = entity["name"]
+            if name in BOOK_NAMES:
+                x = entity["x"] - entity["originX"]
+                y = entity["y"] - entity["originY"]
+                book = Book(x, y, name)
+                books.append(book)
         return books
 
     def init_items(self):
         items = []
-        if self.level == 1:
-            item = Item(250, GROUND_Y, 0)
-            items.append(item)
-
-        elif self.level == 2:
-            item_0 = Item(154, TABLE_Y, 0)
-            item_2 = Item(150, GROUND_Y, 2)
-            items.extend([item_0, item_2])
-
-        elif self.level == 3:
-            item_0 = Item(353, SHELL_Y, 0)
-            item_1 = Item(350, GROUND_Y, 1)
-            item_2 = Item(150, GROUND_Y, 2)
-            items.extend([item_0, item_1, item_2])
-
-        elif self.level == 4:
-            item_0 = Item(23, SHELL_Y, 0)
-            item_1 = Item(20, GROUND_Y, 1)
-            item_2 = Item(140, GROUND_Y, 2)
-            items.extend([item_0, item_1, item_2])
-
-        elif self.level == 5:
-            item_0 = Item(23, SHELL_Y, 0)
-            item_1 = Item(20, GROUND_Y, 1)
-            item_11 = Item(250, GROUND_Y, 1)
-            item_2 = Item(140, GROUND_Y, 2)
-            items.extend([item_0, item_1, item_11, item_2])
-
-        elif self.level == 6:
-            item_0 = Item(250, GROUND_Y, 0)
-            items.append(item_0)
-
+        for entity in self.cur_entity:
+            name = entity["name"]
+            if name in ITEM_NAMES:
+                x = entity["x"] - entity["originX"]
+                y = entity["y"] - entity["originY"]
+                item = Item(x, y, name)
+                items.append(item)
         return items
 
     def init_texts(self):
         text_1 = "Dear Boss Baby,\n"
         text_2 = text_1 + "I don't usually write very much but I know that memos are very important things.\n"
-        text_3 = text_2 + "Even though never went to business school, I did learn to share in kindergarten.\nAnd if there isn't enough love for the two of us, then I will give you all of mine.\n"
+        text_3 = text_2 + "Even though I never went to business school, I did learn to share in kindergarten.\nAnd if there isn't enough love for the two of us, then I will give you all of mine.\n"
         text_4 = text_3 + "I would like to offer you a job. It will be hard-work and there will be no pay.\nBut the good news is that you will never be fired.\n"
-        text_5 = text_4 + "And I promise you this.\nEvery morning when you wake up, I will be there.\nEvery night at dinner, I will be there.\nEvery birthday party, every christmas morning I will be there.\nYear after year, after year.\nWe will grow old together and you and I will always be brother.\nAlways!"
-        text_6 = "Love, Timmy\nThanks for playing"
+        text_5 = text_4 + "And I promise you this.\nEvery morning when you wake up, I will be there.\nEvery night at dinner, I will be there.\nEvery birthday party, every christmas morning I will be there.\n"
+        text_6 = text_5 + "Year after year, after year.\nWe will grow old together and you and I will always be brother.\nAlways!"
+        text_7 = "Love, Timmy\nThanks for playing"
 
-        texts = [text_1, text_2, text_3, text_4, text_5, text_6]
+        texts = [text_1, text_2, text_3, text_4, text_5, text_6, text_7]
 
         text = texts[self.level - 1]
         return text
@@ -208,8 +124,10 @@ class World:
             dis.blit(MAP_IMAGE[index], (tile[1].x, tile[1].y))
         for book in self.books:
             book.draw(dis)
+            book.draw_rect(dis)
         for item in self.items:
             item.draw(dis)
+            item.draw_rect(dis)
         self.font.render_english(self.texts, dis, (20, 20))
         self.draw_tutorial(dis)
 
@@ -270,11 +188,11 @@ class World:
             if item.num == 0 : continue
             if item.collide(rect):
                 crawl_y = rect.y + 2
-                crawl_book_y = rect.y + 7
+                crawl_book_y = rect.y + 5
                 walk_y = rect.y + 10
                 if item.num == 2 :
                     crawl_y = rect.y + 5
-                    crawl_book_y = rect.y + 10
+                    crawl_book_y = rect.y + 8
                     walk_y = rect.y + 13
                 if (self.player.crawl and crawl_y > item.rect.y) or (self.player.crawl_book and crawl_book_y > item.rect.y) or (self.player.move and walk_y > item.rect.y):
                     self.re_pos(item.rect)
@@ -313,11 +231,11 @@ class World:
 
     def collide_item(self):
         rect = self.player.rect
-        if len(self.items) > 0:
-            if self.items[0].collide(rect):
+        for item in self.items:
+            if item.num == 0 and item.collide(rect):
                 bottle_fx.play()
                 self.player.change_action("crawl", "walk")
-                self.items.remove(self.items[0])
+                self.items.remove(item)
 
     def collide_book(self):
         rect = self.player.rect
@@ -335,9 +253,10 @@ class World:
                     book.show = True
 
     def reset(self, level):
-        self.player.reset(180, 184)
+        self.player.reset(180, 200)
         self.level = level
         self.cur_map = GAME_MAP[self.level]
+        self.cur_entity = GAME_MAP_ENTITY[self.level]
         self.tile_rects = self.init_tiles()
         self.books = self.init_books()
         self.items = self.init_items()
@@ -345,11 +264,11 @@ class World:
         self.fade = -1
 
 class Entity:
-    def __init__(self, x, y, num):
-        self.num = num
+    def __init__(self, x, y, name):
+        self.name = name
         self.rect = self.img.get_rect()
         self.rect.x = x
-        self.rect.y = y - self.img.get_height()
+        self.rect.y = y
 
     def draw(self, dis):
         dis.blit(self.img, (self.rect.x, self.rect.y))
@@ -363,14 +282,16 @@ class Entity:
         return False
 
 class Book(Entity):
-    def __init__(self, x, y, num):
+    def __init__(self, x, y, name):
         # 0 is book of bottle, 1 is book of love
-        self.img = BOOK_IMAGE[num]
-        super().__init__(x, y, num)
+        self.img = BOOK_IMAGE[name]
+        super().__init__(x, y, name)
         self.show = self.init_show()
+        self.type, self.num = name.split("_")
+        self.num = int(self.num)
 
     def init_show(self):
-        if self.num >= 2:
+        if self.name == "book_2":
             return False
         return True
 
@@ -379,7 +300,10 @@ class Book(Entity):
             super().draw(dis)
 
 class Item(Entity):
-    def __init__(self, x, y, num):
+    def __init__(self, x, y, name):
         # 0 is bottle, 1 is shell, 2 is table
-        self.img = ITEM_IMAGE[num]
-        super().__init__(x, y, num)
+        if name == "bottle": self.num = 0
+        elif name == "shell": self.num = 1
+        elif name == "table": self.num = 2
+        self.img = ITEM_IMAGE[name]
+        super().__init__(x, y, name)

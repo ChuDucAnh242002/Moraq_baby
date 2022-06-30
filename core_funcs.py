@@ -1,4 +1,4 @@
-import pygame
+import pygame, json
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -67,11 +67,13 @@ def points_between_2d(points):
 def angle_to(points):
     pass
 
+# load image from full path
 def load_image(path):
     path = path + '.png'
     img = pygame.image.load(path)
     return img
 
+# Map from text
 def load_map(path):
     f = open(path + '.txt', 'r')
     data = f.read()
@@ -81,3 +83,49 @@ def load_map(path):
     for row in data:
         game_map.append(list(row))
     return game_map
+
+def load_dict_image(domain, names):
+    dict_img = {}
+    for name in names:
+        img_path = domain + name
+        dict_img[name] = load_image(img_path)
+    return dict_img
+
+def load_dict_map(domain, names):
+    dict_map = {}
+    for index, name in enumerate(names):
+        map_path = domain + name
+        dict_map[index] = load_map(map_path)
+    return dict_map
+
+def load_json_data(path):
+    path = path + ".json"
+    with open(path) as json_file:
+        data = json.load(json_file)
+    return data
+
+def load_layer(name, path, type):
+    json_data = load_json_data(path)
+    layers = json_data["layers"]
+    for layer in layers:
+        if layer["name"] == name:
+            if type == "tile":
+                return layer["data2D"]
+            elif type == "entity":
+                return layer["entities"]
+
+def load_dict_map_json(domain, level):
+    # Example: assets/map/level_0.json
+    # Return map tile
+    dict_map = {}
+    for index in range(level + 1):
+        map_path = domain + "level_" + str(index)
+        dict_map[index] = load_layer("tile_layer", map_path, "tile")
+    return dict_map
+
+def load_dict_entity(domain, level):
+    dict_entity = {}
+    for index in range(level + 1):
+        map_path = domain + "level_" + str(index)
+        dict_entity[index] = load_layer("entity_layer", map_path, "entity")
+    return dict_entity
