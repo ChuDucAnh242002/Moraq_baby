@@ -67,7 +67,6 @@ class Player:
             self.frame = 0
 
         self.movement = [dx, dy]
-        # print(self.movement)
 
     def pick_up(self, book):
         if self.book == None:

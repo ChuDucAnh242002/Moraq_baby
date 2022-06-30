@@ -2,6 +2,11 @@ import pygame
 
 from core_funcs import *
 
+BOOK_NAMES = ['book_0', 'book_1', 'book_2']
+ITEM_NAMES = ['bottle', 'shell', 'table']
+
+BOOK_IMAGE = load_dict_image('assets/images/book/', BOOK_NAMES)
+ITEM_IMAGE = load_dict_image('assets/images/item/', ITEM_NAMES)
 
 class Entity:
     def __init__(self, x, y, name, img):
@@ -21,3 +26,28 @@ class Entity:
         if self.rect.colliderect(rect):
             return True
         return False
+
+class Book(Entity):
+    def __init__(self, x, y, name):
+        # 0 is book of bottle, 1 is book of love
+        super().__init__(x, y, name, BOOK_IMAGE[name])
+        self.show = self.init_show()
+        self.type, self.num = name.split("_")
+        self.num = int(self.num)
+
+    def init_show(self):
+        if self.name == "book_2":
+            return False
+        return True
+
+    def draw(self, dis):
+        if self.show:
+            super().draw(dis)
+
+class Item(Entity):
+    def __init__(self, x, y, name):
+        # 0 is bottle, 1 is shell, 2 is table
+        if name == "bottle": self.num = 0
+        elif name == "shell": self.num = 1
+        elif name == "table": self.num = 2
+        super().__init__(x, y, name, ITEM_IMAGE[name])

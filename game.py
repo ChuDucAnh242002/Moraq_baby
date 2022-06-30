@@ -3,38 +3,14 @@ import pygame
 from core_funcs import *
 from color import *
 from text import Font
-
+from entity import Book, Item, BOOK_NAMES, ITEM_NAMES
+from tilemap import Tilemap
 
 pygame.font.init()
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
 
-FILE_NAMES = ['grass', 'dirt', 'chair_pillar', 'ladder', 'pillar_0', 'pillar_1', 'table_pillar']
-BOOK_NAMES = ['book_0', 'book_1', 'book_2']
-ITEM_NAMES = ['bottle', 'shell', 'table']
-
-MAP_IMAGE = {}
-
-for index, file_name in enumerate(FILE_NAMES):
-    if index == 0 or index == 1:
-        img_path = 'assets/images/' + file_name
-    if index >= 2 and index <= 6:
-        img_path = 'assets/images/pillar/' + file_name
-    MAP_IMAGE[index + 1] = load_image(img_path)
-
 TOTAL_LEVEL = 7
-BOOK_IMAGE = load_dict_image('assets/images/book/', BOOK_NAMES)
-ITEM_IMAGE = load_dict_image('assets/images/item/', ITEM_NAMES)
-GAME_MAP = load_dict_map_json('assets/map/', TOTAL_LEVEL)
-GAME_MAP_ENTITY = load_dict_entity('assets/map/', TOTAL_LEVEL)
-# Size
-TILE_SIZE = MAP_IMAGE[1].get_width()
-BOOK_2_WIDTH, BOOK_2_HEIGHT = 14, 5
-
-# Pos
-GROUND_Y = 192
-TABLE_Y = GROUND_Y - 6
-SHELL_Y = GROUND_Y - 16
 
 # sfx
 pick_up_fx = pygame.mixer.Sound('assets/sfx/pick_up.wav')
@@ -51,11 +27,13 @@ class World:
     def __init__(self, player):
         self.player = player
         self.level = 1
-        self.cur_map = GAME_MAP[self.level]
-        self.cur_entity = GAME_MAP_ENTITY[self.level]
+        self.tilemap = Tilemap(TOTAL_LEVEL)
+        self.map_image = self.tilemap.map_image
+        self.cur_map = self.tilemap.game_map[self.level]
+        self.cur_entity = self.tilemap.game_map_entity[self.level]
+        self.tile_size = self.tilemap.tile_size
         self.tile_rects = self.init_tiles()
-        self.books = self.init_books()
-        self.items = self.init_items()
+        self.books, self.items = self.init_entity()
         self.texts = self.init_texts()
         self.tutorial_texts = self.init_tutorial_texts()
         self.fade = -1
@@ -68,31 +46,24 @@ class World:
         for row, data in enumerate(self.cur_map):
             for col, tile in enumerate(data):
                 if tile != -1:
-                    rect = pygame.Rect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                    rect = pygame.Rect(col * self.tile_size, row * self.tile_size, self.tile_size, self.tile_size)
                     tile_rects.append((tile + 1, rect))
         return tile_rects
 
-    def init_books(self):
+    def init_entity(self):
         books = []
-        for entity in self.cur_entity:
-            name = entity["name"]
-            if name in BOOK_NAMES:
-                x = entity["x"] - entity["originX"]
-                y = entity["y"] - entity["originY"]
-                book = Book(x, y, name)
-                books.append(book)
-        return books
-
-    def init_items(self):
         items = []
         for entity in self.cur_entity:
             name = entity["name"]
+            x = entity["x"] - entity["originX"]
+            y = entity["y"] - entity["originY"]
+            if name in BOOK_NAMES:
+                book = Book(x, y, name)
+                books.append(book)
             if name in ITEM_NAMES:
-                x = entity["x"] - entity["originX"]
-                y = entity["y"] - entity["originY"]
                 item = Item(x, y, name)
                 items.append(item)
-        return items
+        return books, items
 
     def init_texts(self):
         text_1 = "Dear Boss Baby,\n"
@@ -104,9 +75,10 @@ class World:
         text_7 = "Love, Timmy\nThanks for playing"
 
         texts = [text_1, text_2, text_3, text_4, text_5, text_6, text_7]
-
-        text = texts[self.level - 1]
-        return text
+        if self.level <= 7:
+            text = texts[self.level - 1]
+            return text
+        else: return None
 
     def init_tutorial_texts(self):
         texts = []
@@ -116,20 +88,22 @@ class World:
         text_4 = ["J/X to pick up book", (225, 176), True]
         text_5 = ["J/X to place book", (125, 176), False]
         text_6 = ["R to reset level", (160, 176), True]
-        texts.extend([text_1, text_2, text_3, text_4, text_5, text_6])
+        text_7 = ["Bonus level", (305, 176), True]
+        texts.extend([text_1, text_2, text_3, text_4, text_5, text_6, text_7])
         return texts
 
     def draw(self, dis):
         for tile in self.tile_rects:
             index = tile[0]
-            dis.blit(MAP_IMAGE[index], (tile[1].x, tile[1].y))
+            dis.blit(self.map_image[index], (tile[1].x, tile[1].y))
         for book in self.books:
             book.draw(dis)
             # book.draw_rect(dis)
         for item in self.items:
             item.draw(dis)
             # item.draw_rect(dis)
-        self.font.render_english(self.texts, dis, (20, 20))
+        if self.texts != None:
+            self.font.render_english(self.texts, dis, (20, 20))
         self.draw_tutorial(dis)
 
     def draw_tutorial(self, dis):
@@ -169,6 +143,11 @@ class World:
             text_5 = self.tutorial_texts[5]
             if text_5[2]:
                 self.font.render_english(text_5[0], dis, text_5[1])
+
+        # if self.level == 7:
+        #     text_6 = self.tutorial_texts[6]
+        #     if text_6[2]:
+        #         self.font.render_english(text_6[0], dis, text_6[1])
 
     def hit(self, rect):
         hit_list = []
@@ -256,55 +235,9 @@ class World:
     def reset(self, level):
         self.player.reset(180, 200)
         self.level = level
-        self.cur_map = GAME_MAP[self.level]
-        self.cur_entity = GAME_MAP_ENTITY[self.level]
+        self.cur_map = self.tilemap.game_map[self.level]
+        self.cur_entity = self.tilemap.game_map_entity[self.level]
         self.tile_rects = self.init_tiles()
-        self.books = self.init_books()
-        self.items = self.init_items()
+        self.books, self.items = self.init_entity()
         self.texts = self.init_texts()
         self.fade = -1
-
-class Entity:
-    def __init__(self, x, y, name):
-        self.name = name
-        self.rect = self.img.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-    def draw(self, dis):
-        dis.blit(self.img, (self.rect.x, self.rect.y))
-
-    def draw_rect(self, dis):
-        pygame.draw.rect(dis, BLACK, self.rect, 1)
-
-    def collide(self, rect):
-        if self.rect.colliderect(rect):
-            return True
-        return False
-
-class Book(Entity):
-    def __init__(self, x, y, name):
-        # 0 is book of bottle, 1 is book of love
-        self.img = BOOK_IMAGE[name]
-        super().__init__(x, y, name)
-        self.show = self.init_show()
-        self.type, self.num = name.split("_")
-        self.num = int(self.num)
-
-    def init_show(self):
-        if self.name == "book_2":
-            return False
-        return True
-
-    def draw(self, dis):
-        if self.show:
-            super().draw(dis)
-
-class Item(Entity):
-    def __init__(self, x, y, name):
-        # 0 is bottle, 1 is shell, 2 is table
-        if name == "bottle": self.num = 0
-        elif name == "shell": self.num = 1
-        elif name == "table": self.num = 2
-        self.img = ITEM_IMAGE[name]
-        super().__init__(x, y, name)

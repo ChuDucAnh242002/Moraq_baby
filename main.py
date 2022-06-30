@@ -10,10 +10,10 @@ pygame.font.init()
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
 
-WIN_SIZE = (768, 432)
-WIDTH, HEIGHT = 384 ,216
-WIN = pygame.display.set_mode(WIN_SIZE)
-DIS = pygame.Surface((WIDTH, HEIGHT))
+WIDTH, HEIGHT = 768, 432
+SCALE = 2
+WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+DIS = pygame.Surface((WIDTH //SCALE, HEIGHT //SCALE))
 
 CLOCK = pygame.time.Clock()
 FPS = 60
@@ -28,6 +28,7 @@ def quit():
     sys.exit()
 
 def draw(world, player):
+    WIN.fill(WHITE)
     DIS.fill(WHITE)
     world.draw(DIS)
     player.draw(DIS)
@@ -60,9 +61,9 @@ def main():
             timer = 40
             world.fade -= 1
             while timer > 0:
-                screenshoot = pygame.transform.scale(DIS, (WIN_SIZE[0], WIN_SIZE[1]))
+                screenshoot = pygame.transform.scale(DIS, (WIDTH, HEIGHT))
                 timer -= 1
-                black = pygame.Surface((WIN_SIZE[0], WIN_SIZE[1]))
+                black = pygame.Surface((WIDTH, HEIGHT))
                 black.set_alpha(255- 255/40 *timer)
                 screenshoot.blit(black, (0, 0))
                 WIN.blit(screenshoot, (0, 0))
@@ -72,7 +73,7 @@ def main():
 
         draw(world, player)
                 
-        surf = pygame.transform.scale(DIS, (WIN_SIZE[0], WIN_SIZE[1]))
+        surf = pygame.transform.scale(DIS, (WIDTH, HEIGHT))
         WIN.blit(surf, (0, 0))
         pygame.display.update()
 

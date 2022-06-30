@@ -45,7 +45,7 @@
       "gridCellsX": 24,
       "gridCellsY": 15,
       "entities": [
-        {"name": "bottle", "id": 0, "_eid": "56900186", "x": 272, "y": 192, "originX": 0, "originY": 0}
+        {"name": "bottle", "id": 1, "_eid": "56900186", "x": 80, "y": 192, "originX": 0, "originY": 0}
       ]
     }
   ]

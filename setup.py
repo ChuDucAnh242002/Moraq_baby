@@ -11,6 +11,6 @@ setup(
     name= "platformer",
     version= "0.1",
     description = "cx_Freeze script",
-    options = {'build_exe': {"packages": ["pygame", "sys", "player", "game", "color", "core_funcs", "text"], "include_files": ["assets/", "help.txt"]}},
+    options = {'build_exe': {"packages": ["pygame", "sys", "player", "game", "color", "core_funcs", "text", "animation", "entity", "tilemap"], "include_files": ["assets/", "help.txt"]}},
     executables = executables
 )
