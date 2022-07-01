@@ -15,6 +15,7 @@ class Entity:
         self.rect = self.img.get_rect()
         self.rect.x = x
         self.rect.y = y
+        # self.show = True
 
     def draw(self, dis):
         dis.blit(self.img, (self.rect.x, self.rect.y))
@@ -27,13 +28,15 @@ class Entity:
             return True
         return False
 
+class Tile(Entity):
+    def __init__(self, x, y, index, img):
+        super().__init__(x, y, index, img)
+
 class Book(Entity):
     def __init__(self, x, y, name):
         # 0 is book of bottle, 1 is book of love
         super().__init__(x, y, name, BOOK_IMAGE[name])
         self.show = self.init_show()
-        self.type, self.num = name.split("_")
-        self.num = int(self.num)
 
     def init_show(self):
         if self.name == "book_2":
@@ -47,7 +50,4 @@ class Book(Entity):
 class Item(Entity):
     def __init__(self, x, y, name):
         # 0 is bottle, 1 is shell, 2 is table
-        if name == "bottle": self.num = 0
-        elif name == "shell": self.num = 1
-        elif name == "table": self.num = 2
         super().__init__(x, y, name, ITEM_IMAGE[name])

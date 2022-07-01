@@ -1,4 +1,4 @@
-import pygame, sys, json
+import pygame, sys
 
 from pygame.locals import *
 from color import *

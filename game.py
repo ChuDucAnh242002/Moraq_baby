@@ -3,7 +3,6 @@ import pygame
 from core_funcs import *
 from color import *
 from text import Font
-from entity import Book, Item, BOOK_NAMES, ITEM_NAMES
 from tilemap import Tilemap
 
 pygame.font.init()
@@ -28,42 +27,14 @@ class World:
         self.player = player
         self.level = 1
         self.tilemap = Tilemap(TOTAL_LEVEL)
-        self.map_image = self.tilemap.map_image
-        self.cur_map = self.tilemap.game_map[self.level]
-        self.cur_entity = self.tilemap.game_map_entity[self.level]
-        self.tile_size = self.tilemap.tile_size
-        self.tile_rects = self.init_tiles()
-        self.books, self.items = self.init_entity()
+        self.tiles = self.tilemap.tiles
+        self.entities = self.tilemap.entities
         self.texts = self.init_texts()
         self.tutorial_texts = self.init_tutorial_texts()
         self.fade = -1
 
         # Add new font
         self.font = Font('assets/font/small_font.png', PURPLE_BLACK)
-
-    def init_tiles(self):
-        tile_rects = []
-        for row, data in enumerate(self.cur_map):
-            for col, tile in enumerate(data):
-                if tile != -1:
-                    rect = pygame.Rect(col * self.tile_size, row * self.tile_size, self.tile_size, self.tile_size)
-                    tile_rects.append((tile + 1, rect))
-        return tile_rects
-
-    def init_entity(self):
-        books = []
-        items = []
-        for entity in self.cur_entity:
-            name = entity["name"]
-            x = entity["x"] - entity["originX"]
-            y = entity["y"] - entity["originY"]
-            if name in BOOK_NAMES:
-                book = Book(x, y, name)
-                books.append(book)
-            if name in ITEM_NAMES:
-                item = Item(x, y, name)
-                items.append(item)
-        return books, items
 
     def init_texts(self):
         text_1 = "Dear Boss Baby,\n"
@@ -93,15 +64,11 @@ class World:
         return texts
 
     def draw(self, dis):
-        for tile in self.tile_rects:
-            index = tile[0]
-            dis.blit(self.map_image[index], (tile[1].x, tile[1].y))
-        for book in self.books:
-            book.draw(dis)
-            # book.draw_rect(dis)
-        for item in self.items:
-            item.draw(dis)
-            # item.draw_rect(dis)
+        for tile in self.tiles:
+            tile.draw(dis)
+        for list_entity in self.entities.values():
+            for entity in list_entity:
+                entity.draw(dis)
         if self.texts != None:
             self.font.render_english(self.texts, dis, (20, 20))
         self.draw_tutorial(dis)
@@ -144,16 +111,11 @@ class World:
             if text_5[2]:
                 self.font.render_english(text_5[0], dis, text_5[1])
 
-        # if self.level == 7:
-        #     text_6 = self.tutorial_texts[6]
-        #     if text_6[2]:
-        #         self.font.render_english(text_6[0], dis, text_6[1])
-
     def hit(self, rect):
         hit_list = []
-        for tile in self.tile_rects:
-            if rect.colliderect(tile[1]) and (tile[0] == 1 or tile[0] == 2):
-                hit_list.append(tile[1])
+        for tile in self.tiles:
+            if rect.colliderect(tile.rect) and (tile.name == 0 or tile.name == 1):
+                hit_list.append(tile.rect)
         return hit_list
 
     def collision_test(self):
@@ -162,36 +124,41 @@ class World:
 
         rect.x += movement[0]
         hit_list = self.hit(rect)
+        
         for tile in hit_list:
             self.re_pos(tile)
-        for item in self.items:
-            if item.num == 0 : continue
-            if item.collide(rect):
+
+        for entity in self.entities["items"]:
+            if entity.name == "bottle": continue
+            if entity.collide(rect):
                 crawl_y = rect.y + 2
                 crawl_book_y = rect.y + 5
                 walk_y = rect.y + 10
-                if item.num == 2 :
+                if entity.name == "table" :
                     crawl_y = rect.y + 5
                     crawl_book_y = rect.y + 8
                     walk_y = rect.y + 13
-                if (self.player.crawl and crawl_y > item.rect.y) or (self.player.crawl_book and crawl_book_y > item.rect.y) or (self.player.move and walk_y > item.rect.y):
-                    self.re_pos(item.rect)
+                if (self.player.crawl and crawl_y > entity.rect.y) or (self.player.crawl_book and crawl_book_y > entity.rect.y) or (self.player.move and walk_y > entity.rect.y):
+                    self.re_pos(entity.rect)
 
+        # vertical
         rect.y += movement[1]
         hit_list = self.hit(rect)
         for tile in hit_list:
             self.re_pos_y(tile)
-
-        for item in self.items:
-            if item.num > 0 and item.collide(rect):
-                self.re_pos_y(item.rect)
                 
-        for book in self.books:
-            if book.num >= 2 and book.collide(rect) and book.show:
-                self.re_pos_y(book.rect)
 
-        self.collide_book()
-        self.collide_item()
+        for entity in self.entities["items"]:
+            if (entity.name == "table" or entity.name == "shell") and entity.collide(rect):
+                self.re_pos_y(entity.rect)
+
+        for entity in self.entities["books"]:
+            if entity.name == "book_2" and entity.collide(rect):
+                if entity.show:
+                    self.re_pos_y(entity.rect)
+
+        self.collide_book(rect)
+        self.collide_item(rect)
 
     def re_pos(self, entity):
         rect = self.player.rect
@@ -209,35 +176,33 @@ class World:
         elif movement[1] < 0:
             rect.top = entity.bottom
 
-    def collide_item(self):
-        rect = self.player.rect
-        for item in self.items:
-            if item.num == 0 and item.collide(rect):
+    def collide_item(self, rect):
+        for entity in self.entities["items"]:
+            if entity.name == "bottle" and entity.collide(rect):
                 bottle_fx.play()
                 self.player.change_action("crawl", "walk")
-                self.items.remove(item)
+                self.entities["items"].remove(entity)
 
-    def collide_book(self):
-        rect = self.player.rect
-        for book in self.books:
-            if book.num == 0 and book.collide(rect):
-                if self.player.pick_up(book):
+    def collide_book(self, rect):
+        for entity in self.entities["books"]:
+            if entity.name == "book_0" and entity.collide(rect):
+                if self.player.pick_up(entity):
                     pick_up_fx.play()
-                    self.books.remove(book)
-            if book.num == 1 and book.collide(rect) and self.player.move:
+                    self.entities["books"].remove(entity)
+            if entity.name == "book_1" and entity.collide(rect) and self.player.move:
                 love_book_fx.play()
                 self.fade = 2
-            if book.num == 2 and book.collide(rect):
+            if entity.name == "book_2" and entity.collide(rect):
                 if self.player.put_down():
                     put_down_fx.play()
-                    book.show = True
+                    entity.show = True
 
     def reset(self, level):
         self.player.reset(180, 200)
         self.level = level
-        self.cur_map = self.tilemap.game_map[self.level]
-        self.cur_entity = self.tilemap.game_map_entity[self.level]
-        self.tile_rects = self.init_tiles()
-        self.books, self.items = self.init_entity()
+        self.tilemap.change_level(level)
+        self.tiles = self.tilemap.tiles
+        self.entities = self.tilemap.entities
         self.texts = self.init_texts()
+        self.tutorial_texts = self.init_tutorial_texts()
         self.fade = -1
