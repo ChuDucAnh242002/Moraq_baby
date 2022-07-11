@@ -70,10 +70,16 @@ def main():
                 pygame.display.update()
                 CLOCK.tick(FPS)
             world.reset(world.level + 1)
+        
+        if world.tilemap.change_chunk(player.rect.x, player.rect.y):
+            world.tiles = world.tilemap.tiles
+            world.entities = world.tilemap.entities
+            origin_x, origin_y = -WIDTH, 0
 
         draw(world, player)
                 
         surf = pygame.transform.scale(DIS, (WIDTH, HEIGHT))
+        
         WIN.blit(surf, (0, 0))
         pygame.display.update()
 

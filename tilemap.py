@@ -11,10 +11,10 @@ def str_to_tuple(s):
     return tuple([int(v) for v in s.split(';')])
 
 class Tilemap():
-    def __init__(self, level):
+    def __init__(self, total_level, cur_level):
         self.map_image = self.init_map_image()
-        self.total_level = level
-        self.cur_level = 1
+        self.total_level = total_level
+        self.cur_level = cur_level
 
         # Map
         self.game_map = load_dict_map_json('assets/map/', self.total_level)
@@ -24,12 +24,11 @@ class Tilemap():
         self.tile_size = self.map_image[1].get_width()
 
         # Chunk
-        self.chunk_x, self.chunk_y = 15, 24
-        self.tile_chunk = self.init_tile_chunk(self.chunk_x, self.chunk_y)
-        self.entity_chunk = self.init_tile_entity((self.chunk_x - 1) * self.tile_size, (self.chunk_y - 1) * self.tile_size)
+        self.chunk_x, self.chunk_y = [0, 15], [0, 26]
+        self.tile_chunk = self.init_tile_chunk()
+        self.entity_chunk = self.init_entity_chunk()
 
         # Tile and entity
-        
         self.tiles = self.init_tiles()
         self.entities = self.init_entities(CATEGORIES)
 
@@ -40,30 +39,40 @@ class Tilemap():
             map_image[index] = load_image(img_path)
         return map_image
 
-    def init_tile_chunk(self, max_row, max_col):
+    def init_tile_chunk(self):
         tile_chunk = []
-        for row in range(max_row):
+        min_row = self.chunk_x[0]
+        max_row = self.chunk_x[1]
+        min_col = self.chunk_y[0]
+        max_col = self.chunk_y[1]
+        for row in range(min_row, max_row):
             rows = []
-            for col in range(max_col):
+            for col in range(min_col, max_col):
                 rows.append(self.cur_map[row][col])
             tile_chunk.append(rows)
         return tile_chunk
 
-    def init_tile_entity(self, max_row, max_col):
+    def init_entity_chunk (self):
         entity_chuck = []
+        min_row = self.chunk_x[0] * self.tile_size
+        max_row = self.chunk_x[1] * self.tile_size
+        min_col = self.chunk_y[0] * self.tile_size
+        max_col = self.chunk_y[1] * self.tile_size
         for entity in self.cur_entity:
             x = entity["x"] - entity["originX"]
             y = entity["y"] - entity["originY"]
-            if x < max_col and y < max_row:
+            if x > min_col and x < max_col and y > min_row and y < max_row:
                 entity_chuck.append(entity)
         return entity_chuck
 
     def init_tiles(self):
         tiles = []
+        min_row = self.chunk_x[0]
+        min_col = self.chunk_y[0]
         for row, data_x in enumerate(self.tile_chunk):
             for col, index in enumerate(data_x):
                 if index != -1:
-                    tile = Tile(col * self.tile_size, row * self.tile_size, index, self.map_image[index])
+                    tile = Tile((col + min_col) * self.tile_size, (row + min_row)* self.tile_size, index, self.map_image[index])
                     tiles.append(tile)
         return tiles
 
@@ -86,22 +95,38 @@ class Tilemap():
                 entities[type_name] = items
         return entities
 
-    def move_chuck(self,player_x, player_y):
-        if player_x > (self.chunk_x - 1) * self.tile_size:
-            self.chunk_x += 15
-        if player_y > (self.chunk_y - 1) * self.tile_size:
-            self.chunk_y += 24
-        self.tile_chunk = self.init_tile_chunk(self.chunk_x, self.chunk_y)
-        self.entity_chunk = self.init_tile_entity((self.chunk_x - 1) * self.tile_size, (self.chunk_y - 1) * self.tile_size)
+    def change_chunk(self, player_x, player_y):
+        # if player_y > self.chunk_x[1] * self.tile_size:
+        #     print(player_x, (self.chunk_x[1] - 1) * self.tile_size)
+        #     self.chunk_x[0] = self.chunk_x[1]
+        #     self.chunk_x[1] += 15
+        #     self.move_chunk()
+        #     return True
 
+        if player_x <= (self.chunk_y[0])* self.tile_size:
+            self.chunk_y[0] = 0
+            self.chunk_y[1] = 26
+            self.move_chunk()
+            return True
+
+        if player_x >= (self.chunk_y[1] -2 )* self.tile_size:
+            self.chunk_y[0] = self.chunk_y[1] - 4
+            self.chunk_y[1] += 24
+            if self.chunk_y[1] > 24 *2:
+                self.chunk_y[1] = 24* 2
+            self.move_chunk()
+            return True
+        return False
+
+    def move_chunk(self):
+        self.tile_chunk = self.init_tile_chunk()
+        self.entity_chunk = self.init_entity_chunk()
+        self.tiles = self.init_tiles()
+        self.entities = self.init_entities(CATEGORIES)
 
     def change_level(self, level):
         self.cur_level = level
         self.cur_map = self.game_map[self.cur_level]
         self.cur_entity = self.game_map_entity[self.cur_level]
-        self.tile_chunk = self.init_tile_chunk(15, 24)
-        self.entity_chunk = self.init_tile_entity((self.chunk_x - 1) * self.tile_size, (self.chunk_y - 1) * self.tile_size)
-        self.tiles = self.init_tiles()
-        self.entities = self.init_entities([[Book, "books", BOOK_NAMES], [Item, "items", ITEM_NAMES]])
-
+        self.move_chunk()
     

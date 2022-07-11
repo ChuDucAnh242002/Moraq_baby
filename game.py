@@ -9,7 +9,7 @@ pygame.font.init()
 pygame.mixer.init()
 pygame.mixer.pre_init(44100, -16, 2, 512)
 
-TOTAL_LEVEL = 7
+TOTAL_LEVEL = 8
 
 # sfx
 pick_up_fx = pygame.mixer.Sound('assets/sfx/pick_up.wav')
@@ -25,8 +25,8 @@ love_book_fx.set_volume(0.1)
 class World:
     def __init__(self, player):
         self.player = player
-        self.level = 1
-        self.tilemap = Tilemap(TOTAL_LEVEL)
+        self.level = 8
+        self.tilemap = Tilemap(TOTAL_LEVEL, self.level)
         self.tiles = self.tilemap.tiles
         self.entities = self.tilemap.entities
         self.texts = self.init_texts()
@@ -159,6 +159,11 @@ class World:
 
         self.collide_book(rect)
         self.collide_item(rect)
+
+
+        
+
+
 
     def re_pos(self, entity):
         rect = self.player.rect

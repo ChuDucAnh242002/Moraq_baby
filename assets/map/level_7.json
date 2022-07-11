@@ -6,6 +6,20 @@
   "offsetY": 0,
   "layers": [
     {
+      "name": "entity_layer",
+      "_eid": "56830662",
+      "offsetX": 0,
+      "offsetY": 0,
+      "gridCellWidth": 16,
+      "gridCellHeight": 16,
+      "gridCellsX": 24,
+      "gridCellsY": 15,
+      "entities": [
+        {"name": "bottle", "id": 1, "_eid": "56900186", "x": 80, "y": 192, "originX": 0, "originY": 0},
+        {"name": "book_1", "id": 2, "_eid": "56899696", "x": 288, "y": 192, "originX": 0, "originY": -1}
+      ]
+    },
+    {
       "name": "tile_layer",
       "_eid": "56837835",
       "offsetX": 0,
@@ -34,19 +48,6 @@
       ],
       "exportMode": 0,
       "arrayMode": 1
-    },
-    {
-      "name": "entity_layer",
-      "_eid": "56830662",
-      "offsetX": 0,
-      "offsetY": 0,
-      "gridCellWidth": 16,
-      "gridCellHeight": 16,
-      "gridCellsX": 24,
-      "gridCellsY": 15,
-      "entities": [
-        {"name": "bottle", "id": 1, "_eid": "56900186", "x": 80, "y": 192, "originX": 0, "originY": 0}
-      ]
     }
   ]
 }
